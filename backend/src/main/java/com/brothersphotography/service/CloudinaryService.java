@@ -19,6 +19,7 @@ public class CloudinaryService {
 
     private final Cloudinary cloudinary;
 
+    @SuppressWarnings("rawtypes")
     public Map<String, Object> uploadImage(MultipartFile file, String folder) throws IOException {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("File cannot be empty");
@@ -59,6 +60,7 @@ public class CloudinaryService {
         }
     }
 
+    @SuppressWarnings("rawtypes")
     public boolean deleteImage(String publicId) {
         if (publicId == null || publicId.isBlank()) {
             return false;

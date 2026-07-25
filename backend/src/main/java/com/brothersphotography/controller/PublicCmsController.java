@@ -1,7 +1,18 @@
 package com.brothersphotography.controller;
 
 import com.brothersphotography.dto.ApiResponse;
-import com.brothersphotography.entity.*;
+import com.brothersphotography.entity.Award;
+import com.brothersphotography.entity.Blog;
+import com.brothersphotography.entity.ContactEnquiry;
+import com.brothersphotography.entity.FaqItem;
+import com.brothersphotography.entity.GalleryAlbum;
+import com.brothersphotography.entity.HeroSlide;
+import com.brothersphotography.entity.NavigationMenu;
+import com.brothersphotography.entity.PackageItem;
+import com.brothersphotography.entity.SeoMetadata;
+import com.brothersphotography.entity.ServiceItem;
+import com.brothersphotography.entity.SocialLink;
+import com.brothersphotography.entity.Testimonial;
 import com.brothersphotography.service.CmsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

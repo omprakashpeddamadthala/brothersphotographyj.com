@@ -29,7 +29,6 @@ public class CmsService {
     private final GalleryAlbumRepository albumRepository;
     private final GalleryPhotoRepository photoRepository;
     private final BlogRepository blogRepository;
-    private final BlogImageRepository blogImageRepository;
     private final TestimonialRepository testimonialRepository;
     private final AwardRepository awardRepository;
     private final ServiceItemRepository serviceItemRepository;

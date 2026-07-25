@@ -1,0 +1,162 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-serif: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+  --font-sans: 'Jost', 'Futura', 'Century Gothic', system-ui, sans-serif;
+
+  --color-ink: #1a1a1a;
+  --color-paper: #ffffff;
+  --color-mist: #f5f4f2;
+  --color-stone: #8a8a8a;
+  --color-gold: #b49b57;
+  --color-cream: #faf9f7;
+
+  --tracking-widest2: 0.35em;
+}
+
+/* ——— Reset & Base ——— */
+html {
+  scroll-behavior: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+body {
+  @apply bg-paper text-ink font-sans antialiased;
+}
+
+::selection {
+  background: var(--color-gold);
+  color: #fff;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 3px;
+}
+
+/* ——— Custom Scrollbar ——— */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* ——— Hover Zoom ——— */
+.hover-zoom {
+  overflow: hidden;
+}
+.hover-zoom img {
+  transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.hover-zoom:hover img {
+  transform: scale(1.06);
+}
+
+/* ——— Ken Burns Animation ——— */
+@keyframes ken-burns {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1.12);
+  }
+}
+
+.ken-burns {
+  animation: ken-burns 8s ease-out forwards;
+}
+
+/* ——— Fade Slide ——— */
+@keyframes fade-slide-up {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-slide-up {
+  animation: fade-slide-up 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* ——— Preloader ——— */
+@keyframes preloader-pulse {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.preloader-pulse {
+  animation: preloader-pulse 1.6s ease-in-out infinite;
+}
+
+/* ——— Full-screen Menu ——— */
+.menu-overlay {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* ——— Line reveal for headings ——— */
+@keyframes line-reveal {
+  0% {
+    width: 0;
+  }
+  100% {
+    width: 60px;
+  }
+}
+
+.line-reveal::after {
+  content: '';
+  display: block;
+  height: 1px;
+  background: var(--color-gold);
+  margin: 1rem auto 0;
+  animation: line-reveal 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* ——— Image skeleton ——— */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.img-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-mist) 25%,
+    #ede9e4 50%,
+    var(--color-mist) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}

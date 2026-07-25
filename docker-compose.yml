@@ -1,8 +1,53 @@
+version: '3.8'
+
 services:
-  web:
-    build: .
-    image: brothersphotographyj-web
-    container_name: brothersphotographyj
+  # 1. PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: brothersphotography_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: brothersphotography_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
     ports:
-      - '8080:80'
-    restart: unless-stopped
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # 2. Spring Boot Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: brothersphotography_backend
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/brothersphotography_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgrespassword
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:placeholder-cloud-name}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:placeholder-api-key}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:placeholder-api-secret}
+      JWT_SECRET: 404E635266556A586E3272357538782F413F4428472B4B6250655368566D5971
+    depends_on:
+      - postgres
+
+  # 3. React Frontend Web Application & Admin Panel
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: brothersphotography_frontend
+    restart: always
+    ports:
+      - "80:80"
+    environment:
+      VITE_API_BASE_URL: http://localhost:8080/api/v1
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

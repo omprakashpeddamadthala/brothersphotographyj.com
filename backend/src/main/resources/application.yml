@@ -1,0 +1,70 @@
+server:
+  port: ${PORT:8080}
+  error:
+    include-message: always
+    include-binding-errors: always
+
+spring:
+  application:
+    name: brothersphotography-cms-backend
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:local}
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 50MB
+      max-request-size: 50MB
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/brothersphotography_db}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: ${HIBERNATE_DDL_AUTO:update}
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  cache:
+    type: simple # Spring Cache ConcurrentMapCacheManager (no Redis needed)
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:placeholder-google-client-id}
+            client-secret: ${GOOGLE_CLIENT_SECRET:placeholder-google-client-secret}
+            scope:
+              - email
+              - profile
+
+cloudinary:
+  cloud-name: ${CLOUDINARY_CLOUD_NAME:placeholder-cloud-name}
+  api-key: ${CLOUDINARY_API_KEY:placeholder-api-key}
+  api-secret: ${CLOUDINARY_API_SECRET:placeholder-api-secret}
+
+jwt:
+  secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250655368566D5971}
+  expiration-ms: ${JWT_EXPIRATION_MS:86400000} # 24 hours
+
+app:
+  cors:
+    allowed-origins: ${ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000,https://brothersphotographyj.com,https://storiesbyjosephradhik.com}
+  admin:
+    initial-email: ${ADMIN_INITIAL_EMAIL:admin@brothersphotographyj.com}
+    initial-password: ${ADMIN_INITIAL_PASSWORD:Admin@123456}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs

@@ -12,6 +12,11 @@ dist
 dist-ssr
 *.local
 
+# Spring Boot local secret profiles
+application-local.yml
+**/application-local.yml
+*.env
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

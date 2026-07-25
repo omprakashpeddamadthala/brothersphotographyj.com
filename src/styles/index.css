@@ -1,0 +1,51 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-serif: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+  --font-sans: 'Jost', 'Futura', 'Century Gothic', system-ui, sans-serif;
+
+  --color-ink: #1a1a1a;
+  --color-paper: #ffffff;
+  --color-mist: #f5f4f2;
+  --color-stone: #8a8a8a;
+  --color-gold: #b49b57;
+
+  --tracking-widest2: 0.35em;
+}
+
+html {
+  scroll-behavior: auto;
+}
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+body {
+  @apply bg-paper text-ink font-sans antialiased;
+}
+
+::selection {
+  background: var(--color-gold);
+  color: #fff;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 3px;
+}
+
+.hover-zoom {
+  overflow: hidden;
+}
+.hover-zoom img {
+  transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.hover-zoom:hover img {
+  transform: scale(1.06);
+}

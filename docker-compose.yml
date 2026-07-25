@@ -1,0 +1,8 @@
+services:
+  web:
+    build: .
+    image: brothersphotographyj-web
+    container_name: brothersphotographyj
+    ports:
+      - '8080:80'
+    restart: unless-stopped

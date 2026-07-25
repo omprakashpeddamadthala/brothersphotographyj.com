@@ -1,60 +1,76 @@
-# GitHub Actions CI/CD Pipeline Guide
+# GitHub Actions CI/CD & Railway Live Deployment Guide
 
-This repository includes automated GitHub Actions workflows for continuous integration, clean testing, building, and pushing Docker images to Docker Hub.
-
----
-
-## 🚀 Workflow Overview
-
-Location: [docker-ci-cd.yml](file:///d:/brothersphotography.com/brothersphotographyj.com/.github/workflows/docker-ci-cd.yml)
-
-### 1. Backend Pipeline (`backend`)
-- **Environment**: Java 17 (Eclipse Temurin JDK)
-- **Steps**:
-  1. Checkout code
-  2. Setup JDK 17 & Maven dependency caching
-  3. Clean compile & test (`mvn clean package`)
-  4. Docker Login & BuildX setup
-  5. Build & Push Docker image to Docker Hub repository:
-     - `omprakashornold/brothersphotographyj-backend:latest`
-     - `omprakashornold/brothersphotographyj-backend:${{ github.sha }}`
-
-### 2. Frontend Pipeline (`frontend`)
-- **Environment**: Node.js 20 & Nginx 1.27 Alpine
-- **Steps**:
-  1. Checkout code
-  2. Setup Node.js 20 & npm caching
-  3. Clean build (`npm ci && npm run build`)
-  4. Docker Login & BuildX setup
-  5. Build & Push Docker image to Docker Hub repository:
-     - `omprakashornold/brothersphotographyj-frontend:latest`
-     - `omprakashornold/brothersphotographyj-frontend:${{ github.sha }}`
+This repository features automated GitHub Actions workflows for continuous integration, clean testing, building multi-stage Docker images, pushing to Docker Hub, and triggering instant Railway live deployments.
 
 ---
 
-## 🔑 Required GitHub Secrets
+## 🚀 Workflow Pipeline Architecture
 
-To allow GitHub Actions to push Docker images to your Docker Hub account, add these two Secrets to your GitHub repository (**Settings > Secrets and variables > Actions**):
+Location: [.github/workflows/docker-ci-cd.yml](file:///d:/brothersphotography.com/brothersphotographyj.com/.github/workflows/docker-ci-cd.yml)
 
-| Secret Name | Description | Example Value |
-| :--- | :--- | :--- |
-| `DOCKERHUB_USERNAME` | Your Docker Hub Username | `omprakashornold` |
-| `DOCKERHUB_TOKEN` | Docker Hub Personal Access Token | `dchp_...` |
+### 1. Backend Service Pipeline
+- **Clean Build**: JDK 17 (Eclipse Temurin) + Maven (`mvn clean package`)
+- **Docker Push**: `omprakashornold/brothersphotographyj-backend:latest`
+- **Railway Deployment**: Triggers Railway to pull the latest Docker image and deploy live to production.
+
+### 2. Frontend Service Pipeline
+- **Clean Build**: Node.js 20 + Vite (`npm install && npm run build`)
+- **Docker Push**: `omprakashornold/brothersphotographyj-frontend:latest`
+- **Railway Deployment**: Triggers Railway to pull the latest Nginx image and deploy live to production.
 
 ---
 
-## 🐳 Docker Hub Repositories
+## 🔑 GitHub Repository Secrets Configuration
 
-- **Backend Image**: `omprakashornold/brothersphotographyj-backend`
-- **Frontend Image**: `omprakashornold/brothersphotographyj-frontend`
+To enable automated Docker Hub pushing & Railway deployments, go to your GitHub repository (**Settings > Secrets and variables > Actions**) and add:
 
-To pull and run locally:
-```bash
-# Pull images
-docker pull omprakashornold/brothersphotographyj-backend:latest
-docker pull omprakashornold/brothersphotographyj-frontend:latest
+| Secret Name | Required / Optional | Description | Example |
+| :--- | :--- | :--- | :--- |
+| `DOCKERHUB_USERNAME` | **Required** | Docker Hub Username | `omprakashornold` |
+| `DOCKERHUB_TOKEN` | **Required** | Docker Hub Personal Access Token | `dchp_...` |
+| `RAILWAY_BACKEND_WEBHOOK_URL` | Optional (Recommended) | Railway Backend Service Deploy Webhook | `https://backboard.railway.app/deploy/...` |
+| `RAILWAY_FRONTEND_WEBHOOK_URL` | Optional (Recommended) | Railway Frontend Service Deploy Webhook | `https://backboard.railway.app/deploy/...` |
+| `RAILWAY_TOKEN` | Optional | Railway API Project Token | `ral_...` |
 
-# Run containers
-docker run -d -p 8080:8080 --name backend-api omprakashornold/brothersphotographyj-backend:latest
-docker run -d -p 80:80 --name frontend-app omprakashornold/brothersphotographyj-frontend:latest
+---
+
+## ⚙️ Railway Live Environment Variables
+
+Set these environment variables inside your Railway Service Dashboard (**Service > Variables**):
+
+### 1. Railway Backend Service Variables
+```properties
+SPRING_PROFILES_ACTIVE=prod
+PORT=8080
+SPRING_DATASOURCE_URL=postgresql://altaria.proxy.rlwy.net:45572/railway
+SPRING_DATASOURCE_USERNAME=postgres
+SPRING_DATASOURCE_PASSWORD=bjZTBmmEqgEgNOdyJzAZcDDgPgfGkGpA
+HIBERNATE_DDL_AUTO=update
+
+CLOUDINARY_CLOUD_NAME=brothersphotographyj
+CLOUDINARY_API_KEY=brothersphotographyj
+CLOUDINARY_API_SECRET=b08qKDml1Ws5jyykoMT6-STrVP4
+
+JWT_SECRET=404E635266556A586E3272357538782F413F4428472B4B6250655368566D5971
+JWT_EXPIRATION_MS=86400000
+
+ALLOWED_ORIGINS=https://brothersphotographyj.com,https://your-frontend-domain.up.railway.app,http://localhost:5173
+
+ADMIN_INITIAL_EMAIL=admin@brothersphotographyj.com
+ADMIN_INITIAL_PASSWORD=Admin@123456
 ```
+
+### 2. Railway Frontend Service Variables
+```properties
+VITE_API_BASE_URL=https://your-backend-domain.up.railway.app/api/v1
+```
+
+---
+
+## 📌 How to Obtain Railway Deploy Webhooks
+
+1. Open your [Railway Dashboard](https://railway.app).
+2. Select your **Backend** service > Go to **Settings** tab.
+3. Scroll to **Deploy Triggers** / **Deploy Webhook**.
+4. Copy the URL and add it to GitHub Secrets as `RAILWAY_BACKEND_WEBHOOK_URL`.
+5. Repeat for your **Frontend** service and add as `RAILWAY_FRONTEND_WEBHOOK_URL`.

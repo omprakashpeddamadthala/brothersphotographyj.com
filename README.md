@@ -1,4 +1,4 @@
-# Stories by Joseph Radhik — Full Stack Application Architecture
+# Brothers Photography — Full Stack Application Architecture
 
 A full-stack, enterprise-grade, CMS-driven web application comprising a **Java 17 Spring Boot Backend REST API** and a **React 19 TypeScript Frontend Application & Admin Panel**.
 

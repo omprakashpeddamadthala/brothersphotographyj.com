@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { apiFetch, uploadMedia } from '@/services/apiClient';
 import { useCms } from '@/context/CmsContext';
-import { Upload, Save, Check } from 'lucide-react';
+import { Upload, Save, Check, Image as ImageIcon } from 'lucide-react';
 import { ToastContainer } from '@/components/common/Toast';
 import type { ToastMessage } from '@/components/common/Toast';
+import { MediaLibraryModal } from '@/components/common/MediaLibraryModal';
 
 export default function AdminSettingsPage() {
   const { siteSettings, refetchSettings } = useCms();
@@ -23,6 +24,12 @@ export default function AdminSettingsPage() {
   const [saved, setSaved] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
+  const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
+
+  const handleSelectLogo = (url: string) => {
+    setForm((prev) => ({ ...prev, logoUrl: url }));
+    addToast('success', 'Logo selected from media library.');
+  };
 
   const addToast = (type: 'success' | 'error' | 'info', message: string) => {
     const id = Math.random().toString(36).substring(2, 9);
@@ -113,11 +120,21 @@ export default function AdminSettingsPage() {
                 No Logo
               </div>
             )}
-            <label className="flex cursor-pointer items-center gap-2 rounded-lg bg-zinc-800 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-zinc-200 hover:bg-zinc-700 transition">
-              <Upload size={16} />
-              {uploadingLogo ? 'Uploading to Cloudinary…' : 'Upload New Logo'}
-              <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
-            </label>
+            <div className="flex gap-2">
+              <label className="flex cursor-pointer items-center gap-2 rounded-lg bg-zinc-800 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-zinc-200 hover:bg-zinc-700 transition">
+                <Upload size={16} />
+                {uploadingLogo ? 'Uploading to Cloudinary…' : 'Upload New Logo'}
+                <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
+              </label>
+              <button
+                type="button"
+                onClick={() => setIsMediaModalOpen(true)}
+                className="flex items-center gap-2 rounded-lg bg-zinc-800 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-zinc-200 hover:bg-zinc-700 transition"
+              >
+                <ImageIcon size={16} />
+                Choose from Library
+              </button>
+            </div>
           </div>
         </div>
 
@@ -217,6 +234,12 @@ export default function AdminSettingsPage() {
           )}
         </div>
       </form>
+
+      <MediaLibraryModal
+        isOpen={isMediaModalOpen}
+        onClose={() => setIsMediaModalOpen(false)}
+        onSelect={handleSelectLogo}
+      />
     </div>
   );
 }

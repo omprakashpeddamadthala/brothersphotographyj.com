@@ -10,6 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -80,5 +81,36 @@ public class CloudinaryService {
             deleteImage(oldPublicId);
         }
         return uploadImage(newFile, folder);
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<Map<String, Object>> listResources() {
+        try {
+            log.info("Listing all Cloudinary resources under folder prefix 'brothersphotography/'");
+            Map<String, Object> options = new HashMap<>();
+            options.put("type", "upload");
+            options.put("prefix", "brothersphotography/");
+            options.put("max_results", 500);
+
+            Map<?, ?> response = cloudinary.api().resources(options);
+            List<Map<String, Object>> resources = (List<Map<String, Object>>) response.get("resources");
+
+            List<Map<String, Object>> result = new java.util.ArrayList<>();
+            if (resources != null) {
+                for (Map<String, Object> res : resources) {
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("url", res.get("secure_url"));
+                    item.put("publicId", res.get("public_id"));
+                    item.put("width", res.get("width"));
+                    item.put("height", res.get("height"));
+                    item.put("format", res.get("format"));
+                    result.add(item);
+                }
+            }
+            return result;
+        } catch (Exception e) {
+            log.warn("Failed to list resources from Cloudinary ({}). Returning empty list.", e.getMessage());
+            return new java.util.ArrayList<>();
+        }
     }
 }

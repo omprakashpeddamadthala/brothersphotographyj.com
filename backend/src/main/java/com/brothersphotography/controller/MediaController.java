@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -21,6 +22,13 @@ import java.util.Map;
 public class MediaController {
 
     private final CloudinaryService cloudinaryService;
+
+    @GetMapping
+    @Operation(summary = "List all media files from Cloudinary")
+    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> listMedia() {
+        List<Map<String, Object>> result = cloudinaryService.listResources();
+        return ResponseEntity.ok(ApiResponse.success(result, "Media files retrieved successfully"));
+    }
 
     @PostMapping("/upload")
     @Operation(summary = "Upload image file directly to Cloudinary folder")

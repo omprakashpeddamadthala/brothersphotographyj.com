@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { apiFetch, uploadMedia } from '@/services/apiClient';
-import { Save, Upload, Check, Globe } from 'lucide-react';
+import { Save, Upload, Check, Globe, Image as ImageIcon } from 'lucide-react';
 import { ToastContainer } from '@/components/common/Toast';
 import type { ToastMessage } from '@/components/common/Toast';
+import { MediaLibraryModal } from '@/components/common/MediaLibraryModal';
 
 interface SeoItem {
   id?: number;
@@ -38,6 +39,12 @@ export default function AdminSeoPage() {
   const [saved, setSaved] = useState(false);
   const [uploadingOg, setUploadingOg] = useState(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
+  const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
+
+  const handleSelectOgImage = (url: string) => {
+    setSeoForm((prev) => ({ ...prev, ogImageUrl: url }));
+    addToast('success', 'OpenGraph image selected from media library.');
+  };
 
   const addToast = (type: 'success' | 'error' | 'info', message: string) => {
     const id = Math.random().toString(36).substring(2, 9);
@@ -211,11 +218,21 @@ export default function AdminSeoPage() {
                 No Card
               </div>
             )}
-            <label className="cursor-pointer rounded-lg bg-zinc-800 px-4 py-2.5 text-xs font-semibold text-zinc-200 hover:bg-zinc-700 transition flex items-center gap-2">
-              <Upload size={16} />
-              {uploadingOg ? 'Uploading…' : 'Upload Card Image'}
-              <input type="file" accept="image/*" className="hidden" onChange={handleOgUpload} />
-            </label>
+            <div className="flex gap-2">
+              <label className="cursor-pointer rounded-lg bg-zinc-800 px-4 py-2.5 text-xs font-semibold text-zinc-200 hover:bg-zinc-700 transition flex items-center gap-2">
+                <Upload size={16} />
+                {uploadingOg ? 'Uploading…' : 'Upload Card Image'}
+                <input type="file" accept="image/*" className="hidden" onChange={handleOgUpload} />
+              </label>
+              <button
+                type="button"
+                onClick={() => setIsMediaModalOpen(true)}
+                className="cursor-pointer rounded-lg bg-zinc-800 px-4 py-2.5 text-xs font-semibold text-zinc-200 hover:bg-zinc-700 transition flex items-center gap-2"
+              >
+                <ImageIcon size={16} />
+                Choose from Library
+              </button>
+            </div>
           </div>
         </div>
 
@@ -236,6 +253,12 @@ export default function AdminSeoPage() {
           )}
         </div>
       </form>
+
+      <MediaLibraryModal
+        isOpen={isMediaModalOpen}
+        onClose={() => setIsMediaModalOpen(false)}
+        onSelect={handleSelectOgImage}
+      />
     </div>
   );
 }

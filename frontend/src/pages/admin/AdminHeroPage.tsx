@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { apiFetch, uploadMedia } from '@/services/apiClient';
-import { Plus, Trash2, Upload, Save } from 'lucide-react';
+import { Plus, Trash2, Upload, Save, Image as ImageIcon } from 'lucide-react';
 import { ConfirmModal } from '@/components/common/AdminModal';
 import { ToastContainer } from '@/components/common/Toast';
 import type { ToastMessage } from '@/components/common/Toast';
+import { MediaLibraryModal } from '@/components/common/MediaLibraryModal';
 
 interface HeroSlideItem {
   id?: number;
@@ -21,6 +22,8 @@ export default function AdminHeroPage() {
   const [slides, setSlides] = useState<HeroSlideItem[]>([]);
   const [deleteSlideId, setDeleteSlideId] = useState<number | null>(null);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
+  const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
+  const [activeSlideIndexForMedia, setActiveSlideIndexForMedia] = useState<number | null>(null);
 
   const addToast = (type: 'success' | 'error' | 'info', message: string) => {
     const id = Math.random().toString(36).substring(2, 9);
@@ -73,6 +76,20 @@ export default function AdminHeroPage() {
     } catch (err) {
       addToast('error', 'Image upload failed');
     }
+  };
+
+  const handleOpenMediaLibrary = (index: number) => {
+    setActiveSlideIndexForMedia(index);
+    setIsMediaModalOpen(true);
+  };
+
+  const handleSelectFromLibrary = (url: string, publicId: string) => {
+    if (activeSlideIndexForMedia === null) return;
+    const updated = [...slides];
+    updated[activeSlideIndexForMedia].imageUrl = url;
+    updated[activeSlideIndexForMedia].cloudinaryPublicId = publicId;
+    setSlides(updated);
+    addToast('success', 'Selected image from media library.');
   };
 
   const handleSaveSlide = async (slide: HeroSlideItem) => {
@@ -141,10 +158,19 @@ export default function AdminHeroPage() {
               {/* Preview */}
               <div className="relative aspect-video overflow-hidden rounded-xl bg-zinc-950 border border-zinc-800">
                 <img src={slide.imageUrl} alt={slide.title} className="h-full w-full object-cover" />
-                <label className="absolute bottom-2 right-2 flex cursor-pointer items-center gap-1.5 rounded-md bg-zinc-900/90 px-3 py-1.5 text-[11px] font-semibold text-zinc-200 backdrop-blur hover:bg-zinc-800">
-                  <Upload size={14} /> Upload
-                  <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(idx, e)} />
-                </label>
+                <div className="absolute bottom-2 right-2 flex gap-2">
+                  <label className="flex cursor-pointer items-center gap-1.5 rounded-md bg-zinc-900/90 px-3 py-1.5 text-[11px] font-semibold text-zinc-200 backdrop-blur hover:bg-zinc-800">
+                    <Upload size={14} /> Upload
+                    <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(idx, e)} />
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => handleOpenMediaLibrary(idx)}
+                    className="flex items-center gap-1.5 rounded-md bg-zinc-900/90 px-3 py-1.5 text-[11px] font-semibold text-zinc-200 backdrop-blur hover:bg-zinc-800"
+                  >
+                    <ImageIcon size={14} /> Library
+                  </button>
+                </div>
               </div>
 
               {/* Form Fields */}
@@ -219,6 +245,12 @@ export default function AdminHeroPage() {
           </div>
         ))}
       </div>
+
+      <MediaLibraryModal
+        isOpen={isMediaModalOpen}
+        onClose={() => setIsMediaModalOpen(false)}
+        onSelect={handleSelectFromLibrary}
+      />
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { uploadMedia, apiFetch } from '@/services/apiClient';
 import { Upload, Trash2, Copy, Check } from 'lucide-react';
 import { ConfirmModal } from '@/components/common/AdminModal';
@@ -28,6 +28,19 @@ export default function AdminMediaPage() {
     }, 4000);
   };
 
+  const fetchMedia = async () => {
+    try {
+      const data = await apiFetch<MediaItem[]>('/admin/media');
+      setUploadedMedia(data || []);
+    } catch (err: any) {
+      addToast('error', 'Failed to fetch media assets: ' + err.message);
+    }
+  };
+
+  useEffect(() => {
+    fetchMedia();
+  }, []);
+
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -35,14 +48,12 @@ export default function AdminMediaPage() {
     setUploading(true);
     addToast('info', `Uploading ${files.length} images to Cloudinary…`);
     try {
-      const results: MediaItem[] = [];
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        const res = await uploadMedia(file, 'media-library');
-        results.push(res);
+        await uploadMedia(file, 'media-library');
       }
-      setUploadedMedia((prev) => [...results, ...prev]);
       addToast('success', `Successfully uploaded ${files.length} assets!`);
+      fetchMedia();
     } catch (err: any) {
       addToast('error', 'Upload failed: ' + err.message);
     } finally {
@@ -132,7 +143,7 @@ export default function AdminMediaPage() {
 
       {/* Media Grid */}
       <div className="space-y-4">
-        <h2 className="font-serif text-xl font-light text-zinc-200">Session Uploads ({uploadedMedia.length})</h2>
+        <h2 className="font-serif text-xl font-light text-zinc-200">Media Library ({uploadedMedia.length})</h2>
         {uploadedMedia.length > 0 ? (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
             {uploadedMedia.map((media, idx) => (
@@ -165,7 +176,7 @@ export default function AdminMediaPage() {
           </div>
         ) : (
           <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-16 text-center text-xs text-zinc-500">
-            Upload images above to inspect Cloudinary URLs and public IDs.
+            No uploaded media found. Upload images above to add them to your Cloudinary storage.
           </div>
         )}
       </div>

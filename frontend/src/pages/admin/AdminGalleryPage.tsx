@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { apiFetch, uploadMedia } from '@/services/apiClient';
-import { Trash2, Upload, FolderPlus } from 'lucide-react';
+import { Trash2, Upload, FolderPlus, Image as ImageIcon } from 'lucide-react';
 import { ConfirmModal, InputModal } from '@/components/common/AdminModal';
 import { ToastContainer } from '@/components/common/Toast';
 import type { ToastMessage } from '@/components/common/Toast';
+import { MediaLibraryModal } from '@/components/common/MediaLibraryModal';
 
 interface AlbumItem {
   id: number;
@@ -24,6 +25,31 @@ export default function AdminGalleryPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [deletePhotoId, setDeletePhotoId] = useState<number | null>(null);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
+  const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
+
+  const handleSelectPhotosFromLibrary = async (items: any[]) => {
+    if (!selectedAlbum) return;
+
+    try {
+      addToast('info', `Adding ${items.length} photos from library to "${selectedAlbum.title}"…`);
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        await apiFetch(`/admin/gallery/${selectedAlbum.id}/photos`, {
+          method: 'POST',
+          body: JSON.stringify({
+            imageUrl: item.url,
+            cloudinaryPublicId: item.publicId,
+            altText: `${selectedAlbum.title} photograph ${i + 1}`,
+            orderIndex: (selectedAlbum.photos?.length || 0) + i,
+          }),
+        });
+      }
+      addToast('success', `Successfully added ${items.length} photos!`);
+      fetchAlbums();
+    } catch (err: any) {
+      addToast('error', 'Failed to add photos: ' + err.message);
+    }
+  };
 
   const addToast = (type: 'success' | 'error' | 'info', message: string) => {
     const id = Math.random().toString(36).substring(2, 9);
@@ -190,11 +216,21 @@ export default function AdminGalleryPage() {
                   <p className="text-xs text-zinc-400 font-mono mt-1">/stories/{selectedAlbum.slug}</p>
                 </div>
 
-                <label className="cursor-pointer rounded-lg bg-gold px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-yellow-500 flex items-center gap-2 transition">
-                  <Upload size={16} />
-                  {uploading ? 'Uploading to Cloudinary…' : 'Upload Multiple Photos'}
-                  <input type="file" accept="image/*" multiple className="hidden" onChange={handleMultiPhotoUpload} />
-                </label>
+                <div className="flex items-center gap-3">
+                  <label className="cursor-pointer rounded-lg bg-gold px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-yellow-500 flex items-center gap-2 transition">
+                    <Upload size={16} />
+                    {uploading ? 'Uploading to Cloudinary…' : 'Upload Multiple Photos'}
+                    <input type="file" accept="image/*" multiple className="hidden" onChange={handleMultiPhotoUpload} />
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setIsMediaModalOpen(true)}
+                    className="flex items-center gap-2 rounded-lg bg-zinc-800 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-zinc-200 border border-zinc-700 hover:bg-zinc-700 transition"
+                  >
+                    <ImageIcon size={16} />
+                    Choose from Library
+                  </button>
+                </div>
               </div>
 
               {/* Photos Grid */}
@@ -218,6 +254,14 @@ export default function AdminGalleryPage() {
           )}
         </div>
       </div>
+
+      <MediaLibraryModal
+        isOpen={isMediaModalOpen}
+        onClose={() => setIsMediaModalOpen(false)}
+        onSelect={() => {}}
+        onSelectMultiple={handleSelectPhotosFromLibrary}
+        isMultiSelect={true}
+      />
     </div>
   );
 }

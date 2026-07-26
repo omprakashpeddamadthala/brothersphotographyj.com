@@ -56,7 +56,7 @@ jwt:
 
 app:
   cors:
-    allowed-origins: ${ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000,https://brothersphotographyj.com,https://storiesbyjosephradhik.com}
+    allowed-origins: ${ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000,https://brothersphotographyj.com,https://brothersphotographyj.up.railway.app,https://storiesbyjosephradhik.com}
   admin:
     initial-email: ${ADMIN_INITIAL_EMAIL:admin@brothersphotographyj.com}
     initial-password: ${ADMIN_INITIAL_PASSWORD:Admin@123456}

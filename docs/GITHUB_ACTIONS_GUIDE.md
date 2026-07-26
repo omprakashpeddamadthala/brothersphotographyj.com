@@ -62,7 +62,7 @@ ADMIN_INITIAL_PASSWORD=Admin@123456
 
 ### 2. Railway Frontend Service Variables
 ```properties
-VITE_API_BASE_URL=https://your-backend-domain.up.railway.app/api/v1
+VITE_API_BASE_URL=https://brothersphotographyj-api.up.railway.app/api/v1
 ```
 
 ---

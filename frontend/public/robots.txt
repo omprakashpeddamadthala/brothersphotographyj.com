@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://storiesbyjosephradhik.com/sitemap.xml
+Sitemap: https://brothersphotographyj.com/sitemap.xml

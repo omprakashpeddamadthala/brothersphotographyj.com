@@ -1,15 +1,15 @@
 import type { Award, NavItem, Testimonial } from '@/types';
 
 export const siteConfig = {
-  name: 'Stories by Joseph Radhik',
+  name: 'Brothers Photography',
   tagline: 'Stories of love, laughter and happily ever after.',
-  url: 'https://storiesbyjosephradhik.com',
+  url: 'https://brothersphotographyj.com',
   description:
-    'Stories by Joseph Radhik is an international award-winning team of photographers who believe in stories; stories of love, laughter and happily ever after.',
-  email: 'hello@storiesbyjosephradhik.com',
+    'Brothers Photography is an international award-winning team of photographers who believe in stories; stories of love, laughter and happily ever after.',
+  email: 'hello@brothersphotographyj.com',
   phone: '+91 98765 43210',
-  instagram: 'https://instagram.com/storiesbyjosephradhik',
-  facebook: 'https://facebook.com/storiesbyjosephradhik',
+  instagram: 'https://instagram.com/brothersphotographyj',
+  facebook: 'https://facebook.com/brothersphotographyj',
 };
 
 export const navItems: NavItem[] = [

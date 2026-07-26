@@ -54,7 +54,7 @@ export default function AdminLoginPage() {
             CMS Admin Portal
           </h1>
           <p className="mt-2 text-xs uppercase tracking-widest text-zinc-400">
-            Stories by Joseph Radhik
+            Brothers Photography
           </p>
         </div>
 

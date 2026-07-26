@@ -41,7 +41,7 @@ export function Navbar() {
 
   const isHomepage = location.pathname === '/';
   const logoUrl = siteSettings.logoUrl;
-  const siteName = siteSettings.name || 'Stories by Joseph Radhik';
+  const siteName = siteSettings.name || 'Brothers Photography';
 
   return (
     <>

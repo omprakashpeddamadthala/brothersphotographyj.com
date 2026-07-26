@@ -55,22 +55,22 @@ export default function AdminSeoPage() {
       } else {
         setSeoForm({
           pageRoute: route,
-          metaTitle: 'Stories by Joseph Radhik — Wedding Photography',
+          metaTitle: 'Brothers Photography — Wedding Photography',
           metaDescription: 'Award-winning wedding photography told like timeless stories.',
           keywords: 'wedding photography, candid photos, destination wedding, India',
           ogImageUrl: 'https://picsum.photos/seed/og-image/1200/630',
-          canonicalUrl: `https://storiesbyjosephradhik.com${route === '/' ? '' : route}`,
+          canonicalUrl: `https://brothersphotographyj.com${route === '/' ? '' : route}`,
         });
       }
     } catch (err) {
       // Default fallback
       setSeoForm({
         pageRoute: route,
-        metaTitle: 'Stories by Joseph Radhik — Wedding Photography',
+        metaTitle: 'Brothers Photography — Wedding Photography',
         metaDescription: 'Award-winning wedding photography told like timeless stories.',
         keywords: 'wedding photography, candid photos, destination wedding',
         ogImageUrl: 'https://picsum.photos/seed/og-image/1200/630',
-        canonicalUrl: `https://storiesbyjosephradhik.com${route === '/' ? '' : route}`,
+        canonicalUrl: `https://brothersphotographyj.com${route === '/' ? '' : route}`,
       });
     }
   };

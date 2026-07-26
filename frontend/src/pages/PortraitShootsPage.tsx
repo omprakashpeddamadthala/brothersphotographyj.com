@@ -19,7 +19,7 @@ export default function PortraitShootsPage() {
     <>
       <SEO
         title="Portrait Shoots"
-        description="Destination portrait sessions by Stories by Joseph Radhik. Pre-wedding, couple, and engagement photography across India and the world."
+        description="Destination portrait sessions by Brothers Photography. Pre-wedding, couple, and engagement photography across India and the world."
         path="/portrait-shoots"
       />
 

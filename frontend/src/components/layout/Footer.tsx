@@ -4,7 +4,7 @@ import { useCms } from '@/context/CmsContext';
 
 export function Footer() {
   const { siteSettings, navItems } = useCms();
-  const siteName = siteSettings.name || 'STORIES BY JOSEPH RADHIK';
+  const siteName = siteSettings.name || 'BROTHERS PHOTOGRAPHY';
   const copyrightText = siteSettings.copyright || `© ${new Date().getFullYear()} ${siteName.toUpperCase()}. ALL RIGHTS RESERVED.`;
 
   return (

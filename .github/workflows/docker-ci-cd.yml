@@ -51,17 +51,6 @@ jobs:
             omprakashornold/brothersphotographyj-backend:latest
             omprakashornold/brothersphotographyj-backend:${{ github.sha }}
 
-      - name: Trigger Railway Backend Deployment (Webhook)
-        if: github.event_name != 'pull_request' && secrets.RAILWAY_BACKEND_WEBHOOK_URL != ''
-        run: |
-          echo "Triggering Railway backend auto-redeploy..."
-          curl -s -X POST "${{ secrets.RAILWAY_BACKEND_WEBHOOK_URL }}"
-
-      - name: Deploy Backend to Railway via CLI (Fallback)
-        if: github.event_name != 'pull_request' && secrets.RAILWAY_TOKEN != ''
-        run: npx @railway/cli redeploy -y
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
   # ========================================================
   # FRONTEND CI/CD (React + Vite + Nginx + Docker)
@@ -106,8 +95,3 @@ jobs:
             omprakashornold/brothersphotographyj-frontend:latest
             omprakashornold/brothersphotographyj-frontend:${{ github.sha }}
 
-      - name: Trigger Railway Frontend Deployment (Webhook)
-        if: github.event_name != 'pull_request' && secrets.RAILWAY_FRONTEND_WEBHOOK_URL != ''
-        run: |
-          echo "Triggering Railway frontend auto-redeploy..."
-          curl -s -X POST "${{ secrets.RAILWAY_FRONTEND_WEBHOOK_URL }}"

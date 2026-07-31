@@ -5,6 +5,7 @@ import { ConfirmModal, InputModal } from '@/components/common/AdminModal';
 import { ToastContainer } from '@/components/common/Toast';
 import type { ToastMessage } from '@/components/common/Toast';
 import { MediaLibraryModal } from '@/components/common/MediaLibraryModal';
+import { optimizedImageUrl } from '@/utils/cloudinary';
 
 interface AlbumItem {
   id: number;
@@ -65,12 +66,16 @@ export default function AdminGalleryPage() {
 
   const fetchAlbums = async () => {
     try {
-      const res = await apiFetch<any>('/admin/gallery?size=50');
+      const res = await apiFetch<{ content?: AlbumItem[] }>('/admin/gallery?size=50');
       const list = res.content || [];
       setAlbums(list);
-      if (list.length > 0 && !selectedAlbum) {
-        setSelectedAlbum(list[0]);
-      }
+      // Keep the currently selected album in sync with the freshly fetched data
+      // so newly uploaded/deleted photos render immediately instead of showing
+      // a stale snapshot from before the mutation.
+      setSelectedAlbum((prev) => {
+        if (!prev) return list.length > 0 ? list[0] : null;
+        return list.find((a) => a.id === prev.id) ?? (list.length > 0 ? list[0] : null);
+      });
     } catch (err) {
       // Fallback
     }
@@ -237,7 +242,7 @@ export default function AdminGalleryPage() {
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
                 {selectedAlbum.photos?.map((photo) => (
                   <div key={photo.id} className="group relative aspect-[4/5] overflow-hidden rounded-xl bg-zinc-950 border border-zinc-800">
-                    <img src={photo.imageUrl} alt={photo.altText} className="h-full w-full object-cover transition group-hover:scale-105" />
+                    <img src={optimizedImageUrl(photo.imageUrl, { width: 400, height: 500, crop: 'fill' })} alt={photo.altText} loading="lazy" decoding="async" className="h-full w-full object-cover transition group-hover:scale-105" />
                     <button
                       type="button"
                       onClick={() => setDeletePhotoId(photo.id)}

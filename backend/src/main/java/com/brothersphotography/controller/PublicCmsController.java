@@ -1,6 +1,8 @@
 package com.brothersphotography.controller;
 
+import com.brothersphotography.dto.AlbumSummaryDto;
 import com.brothersphotography.dto.ApiResponse;
+import com.brothersphotography.dto.BlogSummaryDto;
 import com.brothersphotography.entity.Award;
 import com.brothersphotography.entity.Blog;
 import com.brothersphotography.entity.ContactEnquiry;
@@ -77,7 +79,7 @@ public class PublicCmsController {
 
     @GetMapping("/public/blogs")
     @Operation(summary = "Get published blog posts with pagination and search")
-    public ResponseEntity<ApiResponse<Page<Blog>>> getBlogs(
+    public ResponseEntity<ApiResponse<Page<BlogSummaryDto>>> getBlogs(
             @RequestParam(required = false) String search,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "9") int size) {
@@ -96,7 +98,7 @@ public class PublicCmsController {
 
     @GetMapping("/public/gallery")
     @Operation(summary = "Get published gallery albums with pagination")
-    public ResponseEntity<ApiResponse<Page<GalleryAlbum>>> getGallery(
+    public ResponseEntity<ApiResponse<Page<AlbumSummaryDto>>> getGallery(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));

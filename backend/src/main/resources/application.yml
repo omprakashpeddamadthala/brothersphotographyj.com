@@ -24,6 +24,9 @@ spring:
     driver-class-name: org.postgresql.Driver
 
   jpa:
+    # Kept enabled intentionally: a few admin endpoints still serialize lazy
+    # collections (e.g. album photos). Batch fetching below keeps this cheap.
+    open-in-view: true
     hibernate:
       ddl-auto: ${HIBERNATE_DDL_AUTO:update}
     show-sql: false
@@ -31,6 +34,12 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
+        # Collapse N+1 lazy loads into a single batched IN (...) query.
+        default_batch_fetch_size: 100
+        jdbc:
+          batch_size: 25
+        order_inserts: true
+        order_updates: true
 
   cache:
     type: simple # Spring Cache ConcurrentMapCacheManager (no Redis needed)

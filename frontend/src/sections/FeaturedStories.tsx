@@ -4,6 +4,7 @@ import { apiFetch } from '@/services/apiClient';
 import { AnimatedHeading } from '@/components/common/AnimatedHeading';
 import { Reveal } from '@/components/common/Reveal';
 import { blogPosts as fallbackBlogPosts } from '@/data/blog';
+import { optimizedImageUrl, cloudinarySrcSet } from '@/utils/cloudinary';
 
 interface PublicBlogItem {
   id: number;
@@ -53,10 +54,13 @@ export function FeaturedStories() {
             <Link to={`/blog/${post.slug}`} className="group block">
               <div className="hover-zoom aspect-[4/5] overflow-hidden rounded-sm bg-stone/10">
                 <img
-                  src={post.coverImageUrl}
+                  src={optimizedImageUrl(post.coverImageUrl, { width: 600, height: 750, crop: 'fill' })}
+                  srcSet={cloudinarySrcSet(post.coverImageUrl, [400, 600, 900])}
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   alt={post.title}
                   className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                   loading="lazy"
+                  decoding="async"
                 />
               </div>
               <div className="mt-5">

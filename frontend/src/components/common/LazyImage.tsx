@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { cn } from '@/utils/cn';
+import { optimizedImageUrl, cloudinarySrcSet } from '@/utils/cloudinary';
 import type { GalleryImage } from '@/types';
 
 interface LazyImageProps {
@@ -19,12 +20,14 @@ export function LazyImage({ image, className, imgClassName, sizes, priority = fa
       style={{ aspectRatio: `${image.width} / ${image.height}` }}
     >
       <img
-        src={image.src}
+        src={optimizedImageUrl(image.src, { width: priority ? 1600 : 800 })}
+        srcSet={cloudinarySrcSet(image.src)}
         alt={image.alt}
         width={image.width}
         height={image.height}
         sizes={sizes}
         loading={priority ? 'eager' : 'lazy'}
+        fetchPriority={priority ? 'high' : 'auto'}
         decoding={priority ? 'sync' : 'async'}
         onLoad={() => setLoaded(true)}
         className={cn(

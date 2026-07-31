@@ -40,17 +40,20 @@ export const CmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const fetchCmsData = async () => {
     try {
       setLoading(true);
-      const settings = await apiFetch<Record<string, string>>('/public/settings').catch(() => null);
+      // Fire the three independent requests in parallel instead of awaiting them
+      // one after another (previously a 3-request latency waterfall on every load).
+      const [settings, navs, socials] = await Promise.all([
+        apiFetch<Record<string, string>>('/public/settings').catch(() => null),
+        apiFetch<Array<{ label: string; path: string; external?: boolean }>>('/public/navigation-menu').catch(() => null),
+        apiFetch<Array<{ platform: string; url: string }>>('/public/social-links').catch(() => null),
+      ]);
+
       if (settings && Object.keys(settings).length > 0) {
         setSiteSettings((prev) => ({ ...prev, ...settings }));
       }
-
-      const navs = await apiFetch<Array<{ label: string; path: string; external?: boolean }>>('/public/navigation-menu').catch(() => null);
       if (navs && navs.length > 0) {
         setNavItemsState(navs.map((n) => ({ label: n.label, to: n.path, external: n.external })));
       }
-
-      const socials = await apiFetch<Array<{ platform: string; url: string }>>('/public/social-links').catch(() => null);
       if (socials && socials.length > 0) {
         setSocialLinks(socials);
       }

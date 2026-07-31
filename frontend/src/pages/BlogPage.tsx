@@ -5,6 +5,7 @@ import { SEO } from '@/components/common/SEO';
 import { Reveal } from '@/components/common/Reveal';
 import { AnimatedHeading } from '@/components/common/AnimatedHeading';
 import { blogPosts as fallbackBlogPosts } from '@/data/blog';
+import { optimizedImageUrl, cloudinarySrcSet } from '@/utils/cloudinary';
 
 interface PublicBlogItem {
   id: number;
@@ -70,10 +71,13 @@ export default function BlogPage() {
               <Link to={`/blog/${post.slug}`} className="group block">
                 <div className="hover-zoom overflow-hidden rounded-sm bg-stone/10">
                   <img
-                    src={post.coverImageUrl}
+                    src={optimizedImageUrl(post.coverImageUrl, { width: 800 })}
+                    srcSet={cloudinarySrcSet(post.coverImageUrl)}
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     alt={post.title}
                     className="w-full object-cover transition-transform duration-700 group-hover:scale-105"
                     loading="lazy"
+                    decoding="async"
                   />
                 </div>
                 <div className="px-1 pb-4 pt-4">

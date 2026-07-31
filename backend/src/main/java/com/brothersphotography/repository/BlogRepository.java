@@ -14,6 +14,10 @@ import java.util.Optional;
 public interface BlogRepository extends JpaRepository<Blog, Long> {
     Optional<Blog> findBySlug(String slug);
 
+    // Detail lookup fetches gallery images in a single query (avoids 1 + N selects).
+    @Query("SELECT DISTINCT b FROM Blog b LEFT JOIN FETCH b.images WHERE b.slug = :slug")
+    Optional<Blog> findBySlugWithImages(@Param("slug") String slug);
+
     Page<Blog> findByStatus(Blog.Status status, Pageable pageable);
 
     @Query("SELECT b FROM Blog b WHERE b.status = 'PUBLISHED' AND " +

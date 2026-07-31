@@ -1,5 +1,7 @@
 package com.brothersphotography.service;
 
+import com.brothersphotography.dto.AlbumSummaryDto;
+import com.brothersphotography.dto.BlogSummaryDto;
 import com.brothersphotography.entity.*;
 import com.brothersphotography.exception.ResourceNotFoundException;
 import com.brothersphotography.repository.*;
@@ -133,13 +135,15 @@ public class CmsService {
 
     // ——— Gallery & Albums ———
 
-    public Page<GalleryAlbum> getPublishedAlbums(Pageable pageable) {
-        return albumRepository.findByPublishedTrue(pageable);
+    @Transactional(readOnly = true)
+    public Page<AlbumSummaryDto> getPublishedAlbums(Pageable pageable) {
+        return albumRepository.findByPublishedTrue(pageable).map(AlbumSummaryDto::from);
     }
 
     @Cacheable(value = "galleryDetail", key = "#slug")
+    @Transactional(readOnly = true)
     public GalleryAlbum getAlbumBySlug(String slug) {
-        return albumRepository.findBySlug(slug)
+        return albumRepository.findBySlugWithPhotos(slug)
                 .orElseThrow(() -> new ResourceNotFoundException("Album not found with slug: " + slug));
     }
 
@@ -179,18 +183,21 @@ public class CmsService {
 
     // ——— Blogs ———
 
-    public Page<Blog> getPublishedBlogs(Pageable pageable) {
-        return blogRepository.findByStatus(Blog.Status.PUBLISHED, pageable);
+    @Transactional(readOnly = true)
+    public Page<BlogSummaryDto> getPublishedBlogs(Pageable pageable) {
+        return blogRepository.findByStatus(Blog.Status.PUBLISHED, pageable).map(BlogSummaryDto::from);
     }
 
     @Cacheable(value = "blogDetail", key = "#slug")
+    @Transactional(readOnly = true)
     public Blog getBlogBySlug(String slug) {
-        return blogRepository.findBySlug(slug)
+        return blogRepository.findBySlugWithImages(slug)
                 .orElseThrow(() -> new ResourceNotFoundException("Blog post not found with slug: " + slug));
     }
 
-    public Page<Blog> searchBlogs(String query, Pageable pageable) {
-        return blogRepository.searchPublishedBlogs(query, pageable);
+    @Transactional(readOnly = true)
+    public Page<BlogSummaryDto> searchBlogs(String query, Pageable pageable) {
+        return blogRepository.searchPublishedBlogs(query, pageable).map(BlogSummaryDto::from);
     }
 
     public Page<Blog> getAllBlogs(Pageable pageable) {

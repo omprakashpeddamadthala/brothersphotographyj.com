@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Search, RefreshCw, Check } from 'lucide-react';
 import { apiFetch } from '@/services/apiClient';
+import { optimizedImageUrl } from '@/utils/cloudinary';
 
 interface MediaItem {
   url: string;
@@ -160,10 +161,11 @@ export function MediaLibraryModal({
                         } bg-zinc-950`}
                       >
                         <img
-                          src={item.url}
+                          src={optimizedImageUrl(item.url, { width: 300, height: 300, crop: 'fill' })}
                           alt={item.publicId}
                           className="h-full w-full object-cover transition group-hover:scale-105"
                           loading="lazy"
+                          decoding="async"
                         />
                         <div className={`absolute inset-0 bg-black/40 transition opacity-0 group-hover:opacity-100 flex flex-col justify-end p-2`}>
                           <p className="text-[9px] font-mono text-zinc-300 truncate">{item.publicId.split('/').pop()}</p>

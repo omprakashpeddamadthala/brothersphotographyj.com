@@ -8,6 +8,7 @@ import { Lightbox } from '@/components/common/Lightbox';
 import { Reveal } from '@/components/common/Reveal';
 import { ParallaxSection } from '@/components/common/ParallaxSection';
 import { getStory } from '@/data/stories';
+import { optimizedImageUrl, cloudinarySrcSet } from '@/utils/cloudinary';
 import type { GalleryImage } from '@/types';
 
 interface PublicAlbumDetail {
@@ -118,10 +119,15 @@ export default function StoryDetailPage() {
                   aria-label={`Open ${image.alt} in gallery view`}
                 >
                   <img
-                    src={image.src}
+                    src={optimizedImageUrl(image.src, { width: 800 })}
+                    srcSet={cloudinarySrcSet(image.src)}
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     alt={image.alt}
+                    width={image.width}
+                    height={image.height}
                     className="w-full object-cover transition-transform duration-700 hover:scale-105"
                     loading="lazy"
+                    decoding="async"
                   />
                 </button>
               </Reveal>

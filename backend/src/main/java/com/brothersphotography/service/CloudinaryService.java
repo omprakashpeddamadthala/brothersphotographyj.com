@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,20 +43,11 @@ public class CloudinaryService {
             result.put("format", uploadResult.get("format"));
             return result;
         } catch (Exception e) {
-            log.warn("Cloudinary remote upload failed ({}). Generating fallback Base64 data URL.", e.getMessage());
-            
-            // Fallback to Data URL for local preview resilience
-            String base64 = Base64.getEncoder().encodeToString(file.getBytes());
-            String mimeType = file.getContentType() != null ? file.getContentType() : "image/png";
-            String dataUrl = "data:" + mimeType + ";base64," + base64;
-
-            Map<String, Object> fallbackResult = new HashMap<>();
-            fallbackResult.put("url", dataUrl);
-            fallbackResult.put("publicId", "fallback-" + System.currentTimeMillis());
-            fallbackResult.put("width", 800);
-            fallbackResult.put("height", 600);
-            fallbackResult.put("format", file.getContentType());
-            return fallbackResult;
+            // Do not store image bytes as a base64 data URL in database text fields.
+            // That turns every content response into a multi-megabyte payload and makes
+            // images impossible to cache independently from the API response.
+            log.error("Cloudinary upload failed; no database fallback will be persisted: {}", e.getMessage());
+            throw new IOException("Image upload failed. Verify the Cloudinary configuration and retry.", e);
         }
     }
 

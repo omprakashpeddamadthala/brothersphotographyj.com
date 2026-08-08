@@ -3,19 +3,21 @@ package com.brothersphotography.controller;
 import com.brothersphotography.dto.AlbumSummaryDto;
 import com.brothersphotography.dto.ApiResponse;
 import com.brothersphotography.dto.BlogSummaryDto;
+import com.brothersphotography.dto.PublicContentDtos.BlogDetailDto;
+import com.brothersphotography.dto.PublicContentDtos.GalleryAlbumDetailDto;
+import com.brothersphotography.dto.PublicContentDtos.HeroSlideDto;
 import com.brothersphotography.entity.Award;
-import com.brothersphotography.entity.Blog;
 import com.brothersphotography.entity.ContactEnquiry;
 import com.brothersphotography.entity.FaqItem;
-import com.brothersphotography.entity.GalleryAlbum;
-import com.brothersphotography.entity.HeroSlide;
 import com.brothersphotography.entity.NavigationMenu;
 import com.brothersphotography.entity.PackageItem;
 import com.brothersphotography.entity.SeoMetadata;
 import com.brothersphotography.entity.ServiceItem;
 import com.brothersphotography.entity.SocialLink;
 import com.brothersphotography.entity.Testimonial;
+import com.brothersphotography.exception.ResourceNotFoundException;
 import com.brothersphotography.service.CmsService;
+import com.brothersphotography.service.DataUriImageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -24,12 +26,21 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -38,6 +49,7 @@ import java.util.Map;
 public class PublicCmsController {
 
     private final CmsService cmsService;
+    private final DataUriImageService dataUriImageService;
 
     @GetMapping("/public/settings")
     @Operation(summary = "Get all active website settings (Name, Logo, Phone, Address, Footer, SEO defaults)")
@@ -59,8 +71,14 @@ public class PublicCmsController {
 
     @GetMapping("/public/hero-slides")
     @Operation(summary = "Get active hero slide carousel images and copy")
-    public ResponseEntity<ApiResponse<List<HeroSlide>>> getHeroSlides() {
-        return ResponseEntity.ok(ApiResponse.success(cmsService.getActiveHeroSlides()));
+    public ResponseEntity<ApiResponse<List<HeroSlideDto>>> getHeroSlides() {
+        List<HeroSlideDto> slides = cmsService.getActiveHeroSlides().stream()
+                .map(slide -> HeroSlideDto.from(
+                        slide,
+                        publicMediaUrl("hero", slide.getId(), slide.getImageUrl())
+                ))
+                .toList();
+        return ResponseEntity.ok(ApiResponse.success(slides));
     }
 
     @GetMapping("/public/homepage")
@@ -68,12 +86,15 @@ public class PublicCmsController {
     public ResponseEntity<ApiResponse<Map<String, Object>>> getHomepageData() {
         Map<String, Object> data = new HashMap<>();
         data.put("settings", cmsService.getAllSettingsMap());
-        data.put("heroSlides", cmsService.getActiveHeroSlides());
+        data.put("heroSlides", cmsService.getActiveHeroSlides().stream()
+                .map(slide -> HeroSlideDto.from(slide, publicMediaUrl("hero", slide.getId(), slide.getImageUrl())))
+                .toList());
         data.put("awards", cmsService.getActiveAwards());
         data.put("testimonials", cmsService.getActiveTestimonials());
         data.put("services", cmsService.getActiveServices());
         data.put("packages", cmsService.getActivePackages());
-        data.put("blogs", cmsService.getPublishedBlogs(PageRequest.of(0, 6, Sort.by(Sort.Direction.DESC, "createdAt"))).getContent());
+        data.put("blogs", cmsService.getPublishedBlogs(PageRequest.of(0, 6, Sort.by(Sort.Direction.DESC, "createdAt")))
+                .map(this::withPublicBlogCover));
         return ResponseEntity.ok(ApiResponse.success(data));
     }
 
@@ -84,16 +105,22 @@ public class PublicCmsController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "9") int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "publishedAt"));
-        if (search != null && !search.isBlank()) {
-            return ResponseEntity.ok(ApiResponse.success(cmsService.searchBlogs(search, pageable)));
-        }
-        return ResponseEntity.ok(ApiResponse.success(cmsService.getPublishedBlogs(pageable)));
+        Page<BlogSummaryDto> blogs = search != null && !search.isBlank()
+                ? cmsService.searchBlogs(search, pageable)
+                : cmsService.getPublishedBlogs(pageable);
+        return ResponseEntity.ok(ApiResponse.success(blogs.map(this::withPublicBlogCover)));
     }
 
     @GetMapping("/public/blogs/{slug}")
     @Operation(summary = "Get single published blog post by slug with gallery images")
-    public ResponseEntity<ApiResponse<Blog>> getBlogBySlug(@PathVariable String slug) {
-        return ResponseEntity.ok(ApiResponse.success(cmsService.getBlogBySlug(slug)));
+    public ResponseEntity<ApiResponse<BlogDetailDto>> getBlogBySlug(@PathVariable String slug) {
+        var blog = cmsService.getBlogBySlug(slug);
+        BlogDetailDto response = BlogDetailDto.from(
+                blog,
+                publicMediaUrl("blog-cover", blog.getId(), blog.getCoverImageUrl()),
+                image -> publicMediaUrl("blog-image", image.getId(), image.getImageUrl())
+        );
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     @GetMapping("/public/gallery")
@@ -102,13 +129,43 @@ public class PublicCmsController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        return ResponseEntity.ok(ApiResponse.success(cmsService.getPublishedAlbums(pageable)));
+        return ResponseEntity.ok(ApiResponse.success(
+                cmsService.getPublishedAlbums(pageable).map(this::withPublicAlbumCover)
+        ));
     }
 
     @GetMapping("/public/gallery/{slug}")
     @Operation(summary = "Get single gallery album by slug with photos")
-    public ResponseEntity<ApiResponse<GalleryAlbum>> getAlbumBySlug(@PathVariable String slug) {
-        return ResponseEntity.ok(ApiResponse.success(cmsService.getAlbumBySlug(slug)));
+    public ResponseEntity<ApiResponse<GalleryAlbumDetailDto>> getAlbumBySlug(@PathVariable String slug) {
+        var album = cmsService.getAlbumBySlug(slug);
+        GalleryAlbumDetailDto response = GalleryAlbumDetailDto.from(
+                album,
+                publicMediaUrl("album-cover", album.getId(), album.getCoverImageUrl()),
+                photo -> publicMediaUrl("album-photo", photo.getId(), photo.getImageUrl())
+        );
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @GetMapping("/public/media/{kind}/{id}")
+    @Operation(summary = "Serve legacy database image data as a cacheable, browser-native image resource")
+    public ResponseEntity<byte[]> getStoredMedia(
+            @PathVariable String kind,
+            @PathVariable Long id,
+            @RequestParam(required = false) Integer width) {
+        String dataUrl = switch (kind) {
+            case "hero" -> cmsService.getHeroImageUrl(id);
+            case "album-cover" -> cmsService.getAlbumCoverImageUrl(id);
+            case "album-photo" -> cmsService.getAlbumPhotoImageUrl(id);
+            case "blog-cover" -> cmsService.getBlogCoverImageUrl(id);
+            case "blog-image" -> cmsService.getBlogImageUrl(id);
+            default -> throw new ResourceNotFoundException("Media resource not found");
+        };
+
+        DataUriImageService.ProcessedImage image = dataUriImageService.forWeb(dataUrl, width);
+        return ResponseEntity.ok()
+                .contentType(image.mediaType())
+                .cacheControl(CacheControl.maxAge(365, TimeUnit.DAYS).cachePublic().immutable())
+                .body(image.body());
     }
 
     @GetMapping("/public/testimonials")
@@ -152,5 +209,25 @@ public class PublicCmsController {
     public ResponseEntity<ApiResponse<ContactEnquiry>> submitEnquiry(@Valid @RequestBody ContactEnquiry enquiry) {
         ContactEnquiry saved = cmsService.submitEnquiry(enquiry);
         return ResponseEntity.ok(ApiResponse.success(saved, "Enquiry submitted successfully"));
+    }
+
+    private BlogSummaryDto withPublicBlogCover(BlogSummaryDto blog) {
+        blog.setCoverImageUrl(publicMediaUrl("blog-cover", blog.getId(), blog.getCoverImageUrl()));
+        return blog;
+    }
+
+    private AlbumSummaryDto withPublicAlbumCover(AlbumSummaryDto album) {
+        album.setCoverImageUrl(publicMediaUrl("album-cover", album.getId(), album.getCoverImageUrl()));
+        return album;
+    }
+
+    private String publicMediaUrl(String kind, Long id, String storedUrl) {
+        if (!dataUriImageService.isImageDataUrl(storedUrl)) {
+            return storedUrl;
+        }
+        return ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/api/v1/public/media/{kind}/{id}")
+                .buildAndExpand(kind, id)
+                .toUriString();
     }
 }

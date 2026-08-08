@@ -31,6 +31,7 @@ public class CmsService {
     private final GalleryAlbumRepository albumRepository;
     private final GalleryPhotoRepository photoRepository;
     private final BlogRepository blogRepository;
+    private final BlogImageRepository blogImageRepository;
     private final TestimonialRepository testimonialRepository;
     private final AwardRepository awardRepository;
     private final ServiceItemRepository serviceItemRepository;
@@ -121,6 +122,13 @@ public class CmsService {
         return heroSlideRepository.findAllByOrderByOrderIndexAsc();
     }
 
+    @Transactional(readOnly = true)
+    public String getHeroImageUrl(Long id) {
+        return heroSlideRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Hero slide not found with id: " + id))
+                .getImageUrl();
+    }
+
     @Transactional
     @CacheEvict(value = {"heroSlides", "homepageData"}, allEntries = true)
     public HeroSlide saveHeroSlide(HeroSlide slide) {
@@ -149,6 +157,20 @@ public class CmsService {
 
     public Page<GalleryAlbum> getAllAlbums(Pageable pageable) {
         return albumRepository.findAll(pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public String getAlbumCoverImageUrl(Long id) {
+        return albumRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Album not found with id: " + id))
+                .getCoverImageUrl();
+    }
+
+    @Transactional(readOnly = true)
+    public String getAlbumPhotoImageUrl(Long id) {
+        return photoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Album photo not found with id: " + id))
+                .getImageUrl();
     }
 
     @Transactional
@@ -202,6 +224,20 @@ public class CmsService {
 
     public Page<Blog> getAllBlogs(Pageable pageable) {
         return blogRepository.findAll(pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public String getBlogCoverImageUrl(Long id) {
+        return blogRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Blog post not found with id: " + id))
+                .getCoverImageUrl();
+    }
+
+    @Transactional(readOnly = true)
+    public String getBlogImageUrl(Long id) {
+        return blogImageRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Blog image not found with id: " + id))
+                .getImageUrl();
     }
 
     @Transactional

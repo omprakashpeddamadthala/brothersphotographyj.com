@@ -19,11 +19,18 @@ export interface CloudinaryOptions {
 
 export function optimizedImageUrl(url: string | undefined | null, opts: CloudinaryOptions = {}): string {
   if (!url) return '';
+
+  const { width, height, crop = 'limit', quality = 'auto' } = opts;
+  if (url.includes('/api/v1/public/media/')) {
+    if (!width) return url;
+    const separator = url.includes('?') ? '&' : '?';
+    return `${url}${separator}width=${width}`;
+  }
+
   if (!url.includes('res.cloudinary.com') || !url.includes('/upload/')) {
     return url;
   }
 
-  const { width, height, crop = 'limit', quality = 'auto' } = opts;
   const transforms = ['f_auto', `q_${quality}`, 'dpr_auto'];
   if (width) transforms.push(`w_${width}`);
   if (height) transforms.push(`h_${height}`);
@@ -33,9 +40,11 @@ export function optimizedImageUrl(url: string | undefined | null, opts: Cloudina
   return url.replace('/upload/', `/upload/${transforms.join(',')}/`);
 }
 
-/** Builds a responsive srcSet across common widths for a Cloudinary URL. */
+/** Builds a responsive srcSet for Cloudinary and legacy database media URLs. */
 export function cloudinarySrcSet(url: string | undefined | null, widths: number[] = [400, 800, 1200, 1600]): string | undefined {
-  if (!url || !url.includes('res.cloudinary.com') || !url.includes('/upload/')) {
+  const isCloudinary = Boolean(url?.includes('res.cloudinary.com') && url?.includes('/upload/'));
+  const isDatabaseMedia = Boolean(url?.includes('/api/v1/public/media/'));
+  if (!url || (!isCloudinary && !isDatabaseMedia)) {
     return undefined;
   }
   return widths.map((w) => `${optimizedImageUrl(url, { width: w })} ${w}w`).join(', ');

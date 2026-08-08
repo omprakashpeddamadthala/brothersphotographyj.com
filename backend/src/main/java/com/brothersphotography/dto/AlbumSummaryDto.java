@@ -1,5 +1,6 @@
 package com.brothersphotography.dto;
 
+import com.brothersphotography.dto.PublicContentViews.AlbumSummaryView;
 import com.brothersphotography.entity.GalleryAlbum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -38,6 +39,21 @@ public class AlbumSummaryDto {
                 .eventDate(a.getEventDate())
                 .excerpt(a.getExcerpt())
                 .coverImageUrl(a.getCoverImageUrl())
+                .category(a.getCategory())
+                .featured(a.getFeatured())
+                .published(a.getPublished())
+                .build();
+    }
+
+    public static AlbumSummaryDto from(AlbumSummaryView a) {
+        return AlbumSummaryDto.builder()
+                .id(a.getId())
+                .title(a.getTitle())
+                .slug(a.getSlug())
+                .couple(a.getCouple())
+                .location(a.getLocation())
+                .eventDate(a.getEventDate())
+                .excerpt(a.getExcerpt())
                 .category(a.getCategory())
                 .featured(a.getFeatured())
                 .published(a.getPublished())

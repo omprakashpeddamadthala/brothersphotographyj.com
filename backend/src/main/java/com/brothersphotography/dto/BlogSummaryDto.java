@@ -1,5 +1,6 @@
 package com.brothersphotography.dto;
 
+import com.brothersphotography.dto.PublicContentViews.BlogSummaryView;
 import com.brothersphotography.entity.Blog;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -36,6 +37,19 @@ public class BlogSummaryDto {
                 .slug(b.getSlug())
                 .excerpt(b.getExcerpt())
                 .coverImageUrl(b.getCoverImageUrl())
+                .category(b.getCategory())
+                .tags(b.getTags())
+                .publishedAt(b.getPublishedAt())
+                .createdAt(b.getCreatedAt())
+                .build();
+    }
+
+    public static BlogSummaryDto from(BlogSummaryView b) {
+        return BlogSummaryDto.builder()
+                .id(b.getId())
+                .title(b.getTitle())
+                .slug(b.getSlug())
+                .excerpt(b.getExcerpt())
                 .category(b.getCategory())
                 .tags(b.getTags())
                 .publishedAt(b.getPublishedAt())

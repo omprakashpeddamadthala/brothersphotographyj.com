@@ -1,5 +1,7 @@
 package com.brothersphotography.repository;
 
+import com.brothersphotography.dto.PublicContentViews.BlogDetailView;
+import com.brothersphotography.dto.PublicContentViews.BlogSummaryView;
 import com.brothersphotography.entity.Blog;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,9 +22,21 @@ public interface BlogRepository extends JpaRepository<Blog, Long> {
 
     Page<Blog> findByStatus(Blog.Status status, Pageable pageable);
 
+    @Query("SELECT b.id AS id, b.title AS title, b.slug AS slug, b.excerpt AS excerpt, b.category AS category, b.tags AS tags, b.publishedAt AS publishedAt, b.createdAt AS createdAt FROM Blog b WHERE b.status = 'PUBLISHED'")
+    Page<BlogSummaryView> findPublishedMetadata(Pageable pageable);
+
+    @Query("SELECT b.id AS id, b.title AS title, b.slug AS slug, b.excerpt AS excerpt, b.content AS content, b.category AS category, b.publishedAt AS publishedAt FROM Blog b WHERE b.slug = :slug AND b.status = 'PUBLISHED'")
+    Optional<BlogDetailView> findPublishedMetadataBySlug(@Param("slug") String slug);
+
     @Query("SELECT b FROM Blog b WHERE b.status = 'PUBLISHED' AND " +
            "(LOWER(b.title) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
            "LOWER(b.excerpt) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
            "LOWER(b.category) LIKE LOWER(CONCAT('%', :query, '%')))")
     Page<Blog> searchPublishedBlogs(@Param("query") String query, Pageable pageable);
+
+    @Query("SELECT b.id AS id, b.title AS title, b.slug AS slug, b.excerpt AS excerpt, b.category AS category, b.tags AS tags, b.publishedAt AS publishedAt, b.createdAt AS createdAt FROM Blog b WHERE b.status = 'PUBLISHED' AND " +
+           "(LOWER(b.title) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+           "LOWER(b.excerpt) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+           "LOWER(b.category) LIKE LOWER(CONCAT('%', :query, '%')))")
+    Page<BlogSummaryView> searchPublishedMetadata(@Param("query") String query, Pageable pageable);
 }

@@ -2,6 +2,11 @@ package com.brothersphotography.service;
 
 import com.brothersphotography.dto.AlbumSummaryDto;
 import com.brothersphotography.dto.BlogSummaryDto;
+import com.brothersphotography.dto.PublicContentViews.AlbumDetailView;
+import com.brothersphotography.dto.PublicContentViews.BlogDetailView;
+import com.brothersphotography.dto.PublicContentViews.BlogImageView;
+import com.brothersphotography.dto.PublicContentViews.GalleryPhotoView;
+import com.brothersphotography.dto.PublicContentViews.HeroSlideView;
 import com.brothersphotography.entity.*;
 import com.brothersphotography.exception.ResourceNotFoundException;
 import com.brothersphotography.repository.*;
@@ -118,6 +123,12 @@ public class CmsService {
         return heroSlideRepository.findByActiveTrueOrderByOrderIndexAsc();
     }
 
+    @Cacheable(value = "heroSlideMetadata")
+    @Transactional(readOnly = true)
+    public List<HeroSlideView> getActiveHeroSlideMetadata() {
+        return heroSlideRepository.findActiveMetadataByOrderIndexAsc();
+    }
+
     public List<HeroSlide> getAllHeroSlides() {
         return heroSlideRepository.findAllByOrderByOrderIndexAsc();
     }
@@ -130,13 +141,13 @@ public class CmsService {
     }
 
     @Transactional
-    @CacheEvict(value = {"heroSlides", "homepageData"}, allEntries = true)
+    @CacheEvict(value = {"heroSlides", "heroSlideMetadata", "homepageData"}, allEntries = true)
     public HeroSlide saveHeroSlide(HeroSlide slide) {
         return heroSlideRepository.save(slide);
     }
 
     @Transactional
-    @CacheEvict(value = {"heroSlides", "homepageData"}, allEntries = true)
+    @CacheEvict(value = {"heroSlides", "heroSlideMetadata", "homepageData"}, allEntries = true)
     public void deleteHeroSlide(Long id) {
         heroSlideRepository.deleteById(id);
     }
@@ -146,6 +157,22 @@ public class CmsService {
     @Transactional(readOnly = true)
     public Page<AlbumSummaryDto> getPublishedAlbums(Pageable pageable) {
         return albumRepository.findByPublishedTrue(pageable).map(AlbumSummaryDto::from);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<AlbumSummaryDto> getPublishedAlbumMetadata(Pageable pageable) {
+        return albumRepository.findPublishedMetadata(pageable).map(AlbumSummaryDto::from);
+    }
+
+    @Transactional(readOnly = true)
+    public AlbumDetailView getPublishedAlbumMetadataBySlug(String slug) {
+        return albumRepository.findPublishedMetadataBySlug(slug)
+                .orElseThrow(() -> new ResourceNotFoundException("Album not found with slug: " + slug));
+    }
+
+    @Transactional(readOnly = true)
+    public List<GalleryPhotoView> getGalleryPhotoMetadata(Long albumId) {
+        return photoRepository.findMetadataByAlbumIdOrderByOrderIndexAsc(albumId);
     }
 
     @Cacheable(value = "galleryDetail", key = "#slug")
@@ -208,6 +235,27 @@ public class CmsService {
     @Transactional(readOnly = true)
     public Page<BlogSummaryDto> getPublishedBlogs(Pageable pageable) {
         return blogRepository.findByStatus(Blog.Status.PUBLISHED, pageable).map(BlogSummaryDto::from);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<BlogSummaryDto> getPublishedBlogMetadata(Pageable pageable) {
+        return blogRepository.findPublishedMetadata(pageable).map(BlogSummaryDto::from);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<BlogSummaryDto> searchPublishedBlogMetadata(String query, Pageable pageable) {
+        return blogRepository.searchPublishedMetadata(query, pageable).map(BlogSummaryDto::from);
+    }
+
+    @Transactional(readOnly = true)
+    public BlogDetailView getPublishedBlogMetadataBySlug(String slug) {
+        return blogRepository.findPublishedMetadataBySlug(slug)
+                .orElseThrow(() -> new ResourceNotFoundException("Blog post not found with slug: " + slug));
+    }
+
+    @Transactional(readOnly = true)
+    public List<BlogImageView> getBlogImageMetadata(Long blogId) {
+        return blogImageRepository.findMetadataByBlogIdOrderByOrderIndexAsc(blogId);
     }
 
     @Cacheable(value = "blogDetail", key = "#slug")

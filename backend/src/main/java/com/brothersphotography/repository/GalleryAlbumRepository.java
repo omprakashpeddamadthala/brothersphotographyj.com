@@ -1,5 +1,7 @@
 package com.brothersphotography.repository;
 
+import com.brothersphotography.dto.PublicContentViews.AlbumDetailView;
+import com.brothersphotography.dto.PublicContentViews.AlbumSummaryView;
 import com.brothersphotography.entity.GalleryAlbum;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,5 +22,11 @@ public interface GalleryAlbumRepository extends JpaRepository<GalleryAlbum, Long
 
     Optional<GalleryAlbum> findBySlug(String slug);
     Page<GalleryAlbum> findByPublishedTrue(Pageable pageable);
+
+    @Query("SELECT a.id AS id, a.title AS title, a.slug AS slug, a.couple AS couple, a.location AS location, a.eventDate AS eventDate, a.excerpt AS excerpt, a.category AS category, a.featured AS featured, a.published AS published FROM GalleryAlbum a WHERE a.published = true")
+    Page<AlbumSummaryView> findPublishedMetadata(Pageable pageable);
+
+    @Query("SELECT a.id AS id, a.title AS title, a.slug AS slug, a.couple AS couple, a.location AS location, a.eventDate AS eventDate, a.excerpt AS excerpt, a.category AS category FROM GalleryAlbum a WHERE a.slug = :slug AND a.published = true")
+    Optional<AlbumDetailView> findPublishedMetadataBySlug(@Param("slug") String slug);
     List<GalleryAlbum> findByPublishedTrueAndFeaturedTrue();
 }

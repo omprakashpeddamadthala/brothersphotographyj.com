@@ -20,6 +20,7 @@ public class CacheConfig {
                 "socialLinks",
                 "navigationMenus",
                 "heroSlides",
+                "heroSlideMetadata",
                 "homepageData",
                 "blogs",
                 "blogDetail",

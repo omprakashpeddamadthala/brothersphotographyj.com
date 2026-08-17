@@ -20,6 +20,7 @@ import com.brothersphotography.entity.Testimonial;
 import com.brothersphotography.exception.ResourceNotFoundException;
 import com.brothersphotography.service.CmsService;
 import com.brothersphotography.service.DataUriImageService;
+import com.brothersphotography.service.MediaCacheService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -30,6 +31,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -54,6 +56,7 @@ public class PublicCmsController {
 
     private final CmsService cmsService;
     private final DataUriImageService dataUriImageService;
+    private final MediaCacheService mediaCacheService;
 
     @GetMapping("/public/settings")
     @Operation(summary = "Get all active website settings (Name, Logo, Phone, Address, Footer, SEO defaults)")
@@ -170,6 +173,15 @@ public class PublicCmsController {
             @PathVariable String kind,
             @PathVariable Long id,
             @RequestParam(required = false) Integer width) {
+        var cached = mediaCacheService.find(kind, id, width);
+        if (cached.isPresent()) {
+            MediaCacheService.CachedMedia image = cached.get();
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(image.contentType()))
+                    .cacheControl(CacheControl.maxAge(365, TimeUnit.DAYS).cachePublic().immutable())
+                    .body(image.content());
+        }
+
         String dataUrl = switch (kind) {
             case "hero" -> cmsService.getHeroImageUrl(id);
             case "album-cover" -> cmsService.getAlbumCoverImageUrl(id);

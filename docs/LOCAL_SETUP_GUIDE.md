@@ -11,7 +11,7 @@ Before starting, ensure you have the following installed on your system:
 - **Java JDK 17** or higher (`java -version`)
 - **Apache Maven 3.8+** (`mvn -version`)
 - **Node.js 18+** & **npm 9+** (`node -v`, `npm -v`)
-- **PostgreSQL 14+** (Local or Railway cloud instance)
+- **PostgreSQL 14+** (Local or Manus-managed instance)
 - **Git** (`git --version`)
 
 ---
@@ -26,7 +26,7 @@ cd backend
 
 ### Step 2: Verify Configuration
 
-The backend is configured to use your Railway PostgreSQL database and Cloudinary credentials defined in `backend/src/main/resources/application-local.yml`.
+The backend reads PostgreSQL and integration credentials from secure environment variables. Local development defaults to `localhost:5432/brothersphotography_db`; Manus-managed deployments should provide the same variables through their secure environment configuration.
 
 > 🔒 **Note**: `application-local.yml` is gitignored to protect secret database passwords and API keys.
 

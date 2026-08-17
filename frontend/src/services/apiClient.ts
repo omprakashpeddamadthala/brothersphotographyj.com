@@ -1,7 +1,7 @@
 const BASE_URL =
   (window as any).__ENV__?.VITE_API_BASE_URL ||
   import.meta.env.VITE_API_BASE_URL ||
-  'https://brothersphotographyj-api.up.railway.app/api/v1';
+  '/api/v1';
 
 export async function apiFetch<T>(
   endpoint: string,

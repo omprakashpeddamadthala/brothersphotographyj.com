@@ -42,6 +42,24 @@ public class DatabaseInitializer implements CommandLineRunner {
         // columns we filter/sort by most often. Without these, every gallery/blog
         // read does a sequential scan, which dominates latency as content grows.
         log.info("Ensuring performance indexes exist...");
+        try {
+            jdbcTemplate.execute("CREATE TABLE IF NOT EXISTS media_cache (" +
+                    "id BIGSERIAL PRIMARY KEY, " +
+                    "media_kind VARCHAR(64) NOT NULL, " +
+                    "source_id BIGINT NOT NULL, " +
+                    "width INTEGER NOT NULL, " +
+                    "height INTEGER NOT NULL, " +
+                    "content_type VARCHAR(128) NOT NULL, " +
+                    "content BYTEA NOT NULL, " +
+                    "created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
+                    "updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
+                    "CONSTRAINT uq_media_cache_source_variant UNIQUE (media_kind, source_id, width)" +
+                    ");");
+            jdbcTemplate.execute("CREATE INDEX IF NOT EXISTS idx_media_cache_lookup ON media_cache(media_kind, source_id, width);");
+        } catch (Exception e) {
+            log.warn("Media cache table creation warning: {}", e.getMessage());
+        }
+
         String[] indexQueries = {
                 // Foreign keys used by lazy collection / detail loads
                 "CREATE INDEX IF NOT EXISTS idx_gallery_photos_album_id ON gallery_photos(album_id);",
